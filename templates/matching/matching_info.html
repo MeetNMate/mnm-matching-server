@@ -1,0 +1,12 @@
+<table style="padding:10px">
+    <tr>
+        <th>id</th>
+        <th>mbti</th>
+    </tr>
+    {% for mate in matching_info %}
+    <tr>
+        <td>{{mate.id}}</td>
+        <td>{{mate.mbti}}</td>
+    </tr>
+   {% endfor %}
+</table>
