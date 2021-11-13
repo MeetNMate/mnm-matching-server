@@ -15,14 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
-from matching.views import MatchingInfoViewSet
 
-router = routers.DefaultRouter()
-router.register('matchinginfo', MatchingInfoViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
     path('matching/', include('matching.urls')), # matching/ 로 시작하는 페이지를 요청하면 matching/urls.py 파일의 매핑 정보를 읽어서 처리해라!
 ]
