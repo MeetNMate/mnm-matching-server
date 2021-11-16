@@ -1,11 +1,7 @@
-from django.db.models.query import QuerySet
-from django.http import response
 from django.utils import timezone
 import pandas as pd
 import numpy as np
-
 from django.shortcuts import get_object_or_404, render
-from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -36,7 +32,6 @@ class MatchingInfoView(APIView):
         serializer = MatchingInfoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            # mate_matching(id)
             return Response("success", status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -73,27 +68,32 @@ class MatchingResultView(APIView):
     GET /results/{uid} 
     """
     def get(self, request, **kwargs):
-        if kwargs.get('uid') is None:
+        uid = kwargs.get('uid')
+        if uid is None:
             queryset = MatchingResult.objects.all()
             serializer = MatchingReulstSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            uid = kwargs.get('uid')
-            queryset = MatchingResult.objects.filter(uid=uid).order_by('-update_at')[0]
-            serializer = MatchingReulstSerializer(queryset)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            try:
+                queryset = MatchingResult.objects.filter(uid=uid).order_by('-update_at')[0]
+                serializer = MatchingReulstSerializer(queryset)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except:
+                return Response("매칭 결과가 존재하지 않습니다.", status.HTTP_400_BAD_REQUEST)
 
     """
-    PUT /result/{uid}
+    POST /result/{uid}
     """
-    def put(self, request, **kwargs):
-        """ 해당 uid의 사용자에게 메이트 매칭을 진행한다. """
-        if kwargs.get('uid') is None:
-            return Response("invalid request", status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, **kwargs):
+        uid = kwargs.get('uid')
+        if uid is None:
+            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
         else:
-            uid = kwargs.get('uid')
-            mate_matching(uid)
-            return Response("success", status.HTTP_200_OK)
+            try:
+                mate_matching(uid)
+                return Response("메이트 매칭에 성공하였습니다.", status.HTTP_201_CREATED)
+            except:
+                return Response("메이트를 매칭하는 중 문제가 발생하였습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def index(request):
@@ -167,10 +167,16 @@ def matching_result(request):
 
     return render(request, 'matching/matching_result.html', content)
 
+def mate_matching_all():
+    infos = MatchingInfo.objects.all()
+    for info in infos:
+        mate_matching(info.id)
+
 def mate_matching(uid):
     # 원본
     user_data = pd.DataFrame(MatchingInfo.objects.filter(id=uid).values()).iloc[0]
     df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
+    print(df)
     
     # 변형
     dataset = df[['mbti', 'sex', 'age', 'air_night_airconditioner', 'noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
@@ -246,7 +252,7 @@ MBTI_DISTANCE = np.array([
     [1, 1, 1, 1, 0.75, 0.5, 0.75, 0.75, 0, 0.5, 0, 0.5, 0.25, 0.25, 0.25, 0.25, 0.5],
     [1, 1, 1, 1, 0.75, 0.5, 0.75, 0.75, 0.5, 0, 0.5, 0, 0.25, 0.25, 0.25, 0.25, 0.5],
     [1, 1, 1, 1, 0.75, 0.5, 0, 0.75, 0, 0.5, 0, 0.5, 0.25, 0.25, 0.25, 0.25, 0.5], 
-    [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 ])
 
 MBTI_MAP = dict(
