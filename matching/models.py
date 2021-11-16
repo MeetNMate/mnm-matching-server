@@ -1,7 +1,7 @@
 from django.db import models
 
 class MatchingInfo(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     sex = models.IntegerField()
     age = models.FloatField()
     mbti = models.CharField(max_length=10)

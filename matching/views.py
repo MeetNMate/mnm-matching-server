@@ -4,23 +4,73 @@ from django.utils import timezone
 import pandas as pd
 import numpy as np
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
+from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import MatchingInfo, MatchingResult
-
-from rest_framework import serializers, viewsets
 from .serializers import MatchingInfoSerializer, MatchingReulstSerializer
 
-class MatchingInfoViewSet(viewsets.ModelViewSet):
-    queryset = MatchingInfo.objects.all()
-    serializer_class = MatchingInfoSerializer
+class MatchingInfoView(APIView):
+    """
+    GET /infos
+    GET /infos/{id}
+    """
+    def get(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is None:
+            infos = MatchingInfo.objects.all()
+            serializer = MatchingInfoSerializer(infos, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            info = get_object_or_404(MatchingInfo, id=id)
+            # info = MatchingInfo.objects.get(id=id)
+            serializer = MatchingInfoSerializer(info)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    """
+    POST /infos
+    """
+    def post(self, request, **kwargs):
+        serializer = MatchingInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            # mate_matching(id)
+            return Response("success", status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    """
+    PUT /infos/{id}
+    """
+    def put(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is not None:
+            info = get_object_or_404(MatchingInfo, id=id)
+            serializer = MatchingInfoSerializer(info, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response("success", status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
+        else:
+            return Response("failed", status=status.HTTP_400_BAD_REQUEST)
+
+    """
+    DELETE /infos/{id}
+    """
+    def delete(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is not None:
+            get_object_or_404(MatchingInfo, id=id).delete()
+            return Response("success", status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("failed", status=status.HTTP_400_BAD_REQUEST)
 
 class MatchingResultView(APIView):
     """ 
-    GET /result
-    GET /result/{uid} 
+    GET /results
+    GET /results/{uid} 
     """
     def get(self, request, **kwargs):
         if kwargs.get('uid') is None:
@@ -43,7 +93,7 @@ class MatchingResultView(APIView):
         else:
             uid = kwargs.get('uid')
             mate_matching(uid)
-            return Response("tesk ok", status.HTTP_200_OK)
+            return Response("success", status.HTTP_200_OK)
 
 
 def index(request):
