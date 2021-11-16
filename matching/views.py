@@ -32,7 +32,7 @@ class MatchingInfoView(APIView):
         serializer = MatchingInfoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response("success", status.HTTP_201_CREATED)
+            return Response("매칭 정보를 등록에 성공하였습니다.", status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     """
@@ -45,11 +45,11 @@ class MatchingInfoView(APIView):
             serializer = MatchingInfoSerializer(info, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response("success", status.HTTP_201_CREATED)
+                return Response("매칭 정보 수정에 성공하였습니다.", status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
         else:
-            return Response("failed", status=status.HTTP_400_BAD_REQUEST)
+            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
     """
     DELETE /infos/{id}
@@ -58,9 +58,9 @@ class MatchingInfoView(APIView):
         id = kwargs.get('id')
         if id is not None:
             get_object_or_404(MatchingInfo, id=id).delete()
-            return Response("success", status=status.HTTP_204_NO_CONTENT)
+            return Response("매칭 정보 삭제에 성공하였습니다.", status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response("failed", status=status.HTTP_400_BAD_REQUEST)
+            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
 class MatchingResultView(APIView):
     """ 
