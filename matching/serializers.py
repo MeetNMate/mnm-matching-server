@@ -1,6 +1,10 @@
-from django.db.models import fields
 from rest_framework.serializers import ModelSerializer
-from .models import MatchingInfo, MatchingResult
+from .models import User, MatchingInfo, MatchingResult
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+       model = User
+       fields = '__all__'    
 
 class MatchingInfoSerializer(ModelSerializer):
     class Meta:

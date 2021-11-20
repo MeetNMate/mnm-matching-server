@@ -4,9 +4,52 @@ import numpy as np
 from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .models import MatchingInfo, MatchingResult
-from .serializers import MatchingInfoSerializer, MatchingReulstSerializer
+from rest_framework import serializers, status
+from .models import MatchingInfo, MatchingResult, User
+from .serializers import UserSerializer, MatchingInfoSerializer, MatchingReulstSerializer
+
+class UserView(APIView):
+    def get(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is None:
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            user = get_object_or_404(User, id=id)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, **kwargs):
+        data = request.data
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is not None and request.data['id'] == id:
+            info = get_object_or_404(User, id=id)
+            serializer = UserSerializer(info, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
+        else:
+            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, **kwargs):
+        id = kwargs.get('id')
+        if id is not None:
+            get_object_or_404(User, id=id).delete()
+            return Response("사용자 정보 삭제에 성공하였습니다.", status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
+
 
 class MatchingInfoView(APIView):
     """
