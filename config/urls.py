@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('matching/', include('matching.urls')), # matching/ 로 시작하는 페이지를 요청하면 matching/urls.py 파일의 매핑 정보를 읽어서 처리해라!
+    path('', include('matching.urls')),
 ]

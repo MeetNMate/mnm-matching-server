@@ -50,12 +50,7 @@ class UserView(APIView):
         else:
             return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
-
 class MatchingInfoView(APIView):
-    """
-    GET /infos
-    GET /infos/{uid}
-    """
     def get(self, request, **kwargs):
         uid = kwargs.get('uid')
         if uid is None:
@@ -67,36 +62,28 @@ class MatchingInfoView(APIView):
             serializer = MatchingInfoSerializer(info)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-    """
-    POST /infos
-    """
     def post(self, request, **kwargs):
-        data = data_preprocess(request.data)
+        data = data_preprocess(request.data) # 매칭 정보 전처리
         serializer = MatchingInfoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    """
-    PUT /infos/{uid}
-    """
+
     def put(self, request, **kwargs):
-        id = kwargs.get('uid')
-        if id is not None:
+        uid = kwargs.get('uid')
+        if uid is not None and request.data['uid'] == uid:
             info = get_object_or_404(MatchingInfo, uid=uid)
             serializer = MatchingInfoSerializer(info, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response("매칭 정보 수정에 성공하였습니다.", status.HTTP_201_CREATED)
+                return Response(serializer.data, status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
         else:
             return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
-    """
-    DELETE /infos/{uid}
-    """
     def delete(self, request, **kwargs):
         uid = kwargs.get('uid')
         if uid is not None:
@@ -106,10 +93,6 @@ class MatchingInfoView(APIView):
             return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
 class MatchingResultView(APIView):
-    """ 
-    GET /results
-    GET /results/{uid} 
-    """
     def get(self, request, **kwargs):
         uid = kwargs.get('uid')
         if uid is None:
@@ -124,19 +107,15 @@ class MatchingResultView(APIView):
             except:
                 return Response("매칭 결과가 존재하지 않습니다.", status.HTTP_400_BAD_REQUEST)
 
-    """
-    POST /result/{uid}
-    """
     def post(self, request, **kwargs):
         uid = kwargs.get('uid')
-        if uid is None:
-            return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                mate_matching(uid)
-                return Response("메이트 매칭에 성공하였습니다.", status.HTTP_201_CREATED)
-            except:
-                return Response("메이트를 매칭하는 중 문제가 발생하였습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+        try:
+            mate_list = mate_matching(uid) # 메이트 매칭
+            update_at = timezone.now()
+            MatchingResult(uid_id=uid, mate_list=mate_list, update_at=update_at).save()
+            return Response(str(mate_list), status.HTTP_201_CREATED)
+        except:
+            return Response("메이트 매칭 중 에러 발생", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def data_preprocess(data):
     """ 매칭 정보 전처리 """
@@ -238,83 +217,18 @@ def data_preprocess(data):
         
     return data 
 
-def matching_result(request):
-    user_id = 10
-
-    # 원본
-    user_data = pd.DataFrame(MatchingInfo.objects.filter(uid=user_id).values()).iloc[0]
-    df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
-    
-    # 변형
-    dataset = df[['mbti', 'sex', 'age', 'air_night_airconditioner', 'noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
-    user = user_data[['mbti', 'sex', 'age', 'air_night_airconditioner', 'noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
-
-    # 데이터 필터링
-    if user_data['mate_pet'] == 1:
-        is_not_user_pet = df['user_pet'] == 0
-        dataset = dataset[is_not_user_pet]
-    elif user_data['mate_pet'] == 0.5:
-        user['pet_dog'], user['pet_cat'], user['pet_reptile_fish'], user['pet_rodent'], user['pet_bird'] = user_data['mate_pet_dog'], user_data['mate_pet_cat'], user_data['mate_pet_reptile_fish'], user_data['mate_pet_rodent'], user_data['mate_pet_bird']
-        dataset[['pet_dog', 'pet_cat', 'pet_reptile_fish', 'pet_rodent', 'pet_bird']] = df[['user_pet_dog', 'user_pet_cat', 'user_pet_reptile_fish', 'user_pet_rodent', 'user_pet_bird']]
-
-    if user_data['mate_smoking'] != 0.5:
-        user['smoking'] = df.iloc[0]['mate_smoking']
-        dataset['smoking'] = df['user_smoking']
-
-    if user_data['air_like_airconditioner'] != 0:
-        user['air_like_airconditioner'] = df.iloc[0]['air_like_airconditioner']
-        dataset['air_like_airconditioner'] = df['air_like_airconditioner']
-
-    if user_data['air_like_heater'] != 0.5:
-        user['air_like_heater'] = df.iloc[0]['air_like_heater']
-        dataset['air_like_heater'] = df['air_like_heater']
-
-    if user_data['noise_talking'] != 0:
-        user['noise_talking'] = df.iloc[0]['noise_talking']
-        dataset['noise_talking'] = df['noise_talking']
-
-    if user_data['noise_music'] != 0:
-        user['noise_music'] = df.iloc[0]['noise_music']
-        dataset['noise_music'] = df['noise_music']
-
-    if user_data['mate_bug_killer'] != 0:
-        user['bug_killer'] = df.iloc[0]['mate_bug_killer']
-        dataset['bug_killer'] = df['user_bug_killer']
-
-    if user_data['mate_cooking'] != 0:
-        user['cooking'] = df.iloc[0]['mate_cooking']
-        dataset['cooking'] = df['user_cooking']
-    
-    distance_result = np.zeros(len(dataset))
-
-    # 기준 사용자와 다른 사용자 간의 거리를 구한다.
-    for i in range(len(dataset)):
-        distance_result[i] = distance(user, dataset.iloc[i])
-
-    # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
-    result_index_list = np.argsort(distance_result)[:20]
-
-    result = [df.iloc[i]['uid'] for i in result_index_list]
-    
-    content = {'uid': user_id, 'result': result}
-
-    # MatchingResult
-    update_at = timezone.now()
-    MatchingResult(uid=user_id, mate_list=result, update_at=update_at).save()
-
-    return render(request, 'matching/matching_result.html', content)
-
 def mate_matching_all():
+    """ 모든 사용자 메이트 매칭 """
     infos = MatchingInfo.objects.all()
     for info in infos:
         mate_matching(info.uid)
 
 def mate_matching(uid):
+    """ 메이트 매칭 """
     # 원본
     user_data = pd.DataFrame(MatchingInfo.objects.filter(uid=uid).values()).iloc[0]
     df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
-    print(df)
-    
+
     # 변형
     dataset = df[['mbti', 'sex', 'age','noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
     user = user_data[['mbti', 'sex', 'age','noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
@@ -328,33 +242,33 @@ def mate_matching(uid):
         dataset[['pet_dog', 'pet_cat', 'pet_reptile_fish', 'pet_rodent', 'pet_bird']] = df[['user_pet_dog', 'user_pet_cat', 'user_pet_reptile_fish', 'user_pet_rodent', 'user_pet_bird']]
 
     if user_data['mate_smoking'] != 0.5:
-        user['smoking'] = df.iloc[0]['mate_smoking']
+        user['smoking'] = df.loc[0,'mate_smoking']
         dataset['smoking'] = df['user_smoking']
 
     if user_data['air_like_airconditioner'] != 0:
-        user['air_like_airconditioner'] = df.iloc[0]['air_like_airconditioner']
+        user['air_like_airconditioner'] = df.loc[0,'air_like_airconditioner']
         dataset['air_like_airconditioner'] = df['air_like_airconditioner']
 
     if user_data['air_like_heater'] != 0.5:
-        user['air_like_heater'] = df.iloc[0]['air_like_heater']
+        user['air_like_heater'] = df.loc[0,'air_like_heater']
         dataset['air_like_heater'] = df['air_like_heater']
 
     if user_data['noise_talking'] != 0:
-        user['noise_talking'] = df.iloc[0]['noise_talking']
+        user['noise_talking'] = df.loc[0,'noise_talking']
         dataset['noise_talking'] = df['noise_talking']
 
     if user_data['noise_music'] != 0:
-        user['noise_music'] = df.iloc[0]['noise_music']
+        user['noise_music'] = df.loc[0,'noise_music']
         dataset['noise_music'] = df['noise_music']
 
     if user_data['mate_bug_killer'] != 0:
-        user['bug_killer'] = df.iloc[0]['mate_bug_killer']
+        user['bug_killer'] = df.loc[0,'mate_bug_killer']
         dataset['bug_killer'] = df['user_bug_killer']
 
     if user_data['mate_cooking'] != 0:
-        user['cooking'] = df.iloc[0]['mate_cooking']
+        user['cooking'] = df.loc[0,'mate_cooking']
         dataset['cooking'] = df['user_cooking']
-    
+
     distance_result = np.zeros(len(dataset))
 
     # 기준 사용자와 다른 사용자 간의 거리를 구한다.
@@ -364,13 +278,7 @@ def mate_matching(uid):
     # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
     result_index_list = np.argsort(distance_result)[:20]
 
-    result = [df.iloc[i]['uid'] for i in result_index_list]
-
-    # DB에 결과 저장
-    update_at = timezone.now()
-    r = MatchingResult(uid=uid, mate_list=result, update_at=update_at).save()
-    print(r)
-
+    return [df.loc[i,'uid_id'] for i in result_index_list]
 
 MBTI_DISTANCE = np.array([
     [0.25, 0.25, 0.25, 0, 0.25, 0, 0.25, 0.25, 1, 1, 1, 1, 1, 1, 1, 1, 0.5],
@@ -413,7 +321,7 @@ MBTI_MAP = dict(
 )
 
 def distance(u1, u2):
-    ''' 사용자 사이의 거리 리턴'''
+    """ 사용자 사이의 거리 리턴 """
     mbti = MBTI_DISTANCE[MBTI_MAP[u1[0]]][MBTI_MAP[u2[0]]] ** 2
     sum_ = np.sum(np.power((u2[1:]-u1[1:]),2))
     return np.sqrt(sum_ + mbti)
