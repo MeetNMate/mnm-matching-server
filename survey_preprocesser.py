@@ -10,7 +10,6 @@ def main():
 
     try:
         df = preprocess_data(df)
-        print(df)
     except Exception as e:
         print("[데이터 전처리 중 에러 발생] " + e)
 
@@ -223,24 +222,21 @@ def insert_data(df):
                        password = 'blackpink0808', 
                        db = 'mnm_matching_server_db')
 
+    cursor = conn.cursor()
+
     # user 테이블에 삽입
-    # cursor = conn.cursor()
-    # query = "INSERT INTO user (id, use_matching) VALUES (%s, true);"
+    query = "INSERT INTO user (id, use_matching) VALUES (%s, true);"
 
-    # data = [x for x in df['uid']]
+    data = [x for x in df['uid']]
 
-    # cursor.executemany(query, data)
+    cursor.executemany(query, data)
 
-    # conn.commit()
-
-    # conn.close()
+    conn.commit()
 
     # matching_info 테이블에 삽입
-    cursor = conn.cursor()
     query = "INSERT INTO matching_info (uid, sex, age, mbti, user_smoking, mate_smoking, user_pet, user_bug_killer, mate_bug_killer, user_cooking, mate_cooking, eat_together, share_item, mate_alcohol, mate_clean, permission_to_enter, user_pet_dog, user_pet_cat, user_pet_reptile_fish, user_pet_rodent, user_pet_bird, mate_pet, mate_pet_dog, mate_pet_cat, mate_pet_reptile_fish, mate_pet_rodent, mate_pet_bird, air_like_airconditioner, air_like_heater, noise_talking, noise_music, noise_alarm) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
 
-    # dataframe을 executemany에 넣을 수 있는 형태로 변환
-    data = [tuple(x) for x in df.values]
+    data = [tuple(x) for x in df.values] # dataframe을 executemany에 넣을 수 있는 형태로 변환
 
     cursor.executemany(query, data)
     conn.commit()
