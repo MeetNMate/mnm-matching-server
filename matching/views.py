@@ -11,17 +11,16 @@ from .serializers import MatchingInfoSerializer, MatchingReulstSerializer
 class MatchingInfoView(APIView):
     """
     GET /infos
-    GET /infos/{id}
+    GET /infos/{uid}
     """
     def get(self, request, **kwargs):
-        id = kwargs.get('id')
-        if id is None:
+        uid = kwargs.get('uid')
+        if uid is None:
             infos = MatchingInfo.objects.all()
             serializer = MatchingInfoSerializer(infos, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            info = get_object_or_404(MatchingInfo, id=id)
-            # info = MatchingInfo.objects.get(id=id)
+            info = get_object_or_404(MatchingInfo, uid=uid)
             serializer = MatchingInfoSerializer(info)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -29,19 +28,20 @@ class MatchingInfoView(APIView):
     POST /infos
     """
     def post(self, request, **kwargs):
-        serializer = MatchingInfoSerializer(data=request.data)
+        data = data_preprocess(request.data)
+        serializer = MatchingInfoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response("매칭 정보를 등록에 성공하였습니다.", status.HTTP_201_CREATED)
+            return Response(serializer.data, status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     """
-    PUT /infos/{id}
+    PUT /infos/{uid}
     """
     def put(self, request, **kwargs):
-        id = kwargs.get('id')
+        id = kwargs.get('uid')
         if id is not None:
-            info = get_object_or_404(MatchingInfo, id=id)
+            info = get_object_or_404(MatchingInfo, uid=uid)
             serializer = MatchingInfoSerializer(info, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -52,12 +52,12 @@ class MatchingInfoView(APIView):
             return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
 
     """
-    DELETE /infos/{id}
+    DELETE /infos/{uid}
     """
     def delete(self, request, **kwargs):
-        id = kwargs.get('id')
-        if id is not None:
-            get_object_or_404(MatchingInfo, id=id).delete()
+        uid = kwargs.get('uid')
+        if uid is not None:
+            get_object_or_404(MatchingInfo, uid=uid).delete()
             return Response("매칭 정보 삭제에 성공하였습니다.", status=status.HTTP_204_NO_CONTENT)
         else:
             return Response("잘못된 요청입니다.", status=status.HTTP_400_BAD_REQUEST)
@@ -95,17 +95,111 @@ class MatchingResultView(APIView):
             except:
                 return Response("메이트를 매칭하는 중 문제가 발생하였습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def data_preprocess(data):
+    """ 매칭 정보 전처리 """
+    age = data['age']
+    if age >= 40:
+        age = 1
+    elif 30 <= age <= 39:
+        age = 0.8
+    elif 27 <= age <= 29:
+        age = 0.6
+    elif 24 <= age <= 26:
+        age = 0.4
+    elif 20 <= age <= 23:
+        age = 0.2
+    else:
+        age = 0
+    data['age'] = age
 
-def index(request):
-    matching_info = MatchingInfo.objects.all() # MatchingInfo 테이블의 모든 객체를 불러온다.
-    context = {'matching_info': matching_info}
-    return render(request, 'matching/matching_info.html', context)
+    mate_smoking = data['mate_smoking']
+    if mate_smoking == 2:
+        mate_smoking = 0
+    elif mate_smoking == 3:
+        mate_smoking = 0.5
+    data['mate_smoking'] = mate_smoking
+
+    mate_pet = data['mate_pet']
+    if mate_pet == 1:
+        mate_pet = 0
+    elif mate_pet == 2:
+        mate_pet = 0.5
+    else:
+        mate_pet = 0
+    data['mate_pet'] = mate_pet
+
+    air_like_airconditioner = data['air_like_airconditioner']
+    if air_like_airconditioner == 2:
+        air_like_airconditioner = 0.5
+    elif air_like_airconditioner == 3:
+        air_like_airconditioner = 0
+    data['air_like_airconditioner'] = air_like_airconditioner
+
+    air_like_heater = data['air_like_heater']
+    if air_like_heater == 2:
+        air_like_heater = 0.5
+    elif air_like_heater == 3:
+        air_like_heater = 0
+    data['air_like_heater'] = air_like_heater
+
+    noise_talking = data['noise_talking']
+    if noise_talking == 2:
+        noise_talking = 0.5
+    elif noise_talking == 3:
+        noise_talking = 0
+    data['noise_talking'] = noise_talking
+
+    noise_music = data['noise_music']
+    if noise_music == 2:
+        noise_music = 0.5
+    elif noise_music == 3:
+        noise_music = 0
+    data['noise_music'] = noise_music
+    
+    user_bug_killer = data['user_bug_killer']
+    if user_bug_killer == 2:
+        user_bug_killer = 0.5
+    elif user_bug_killer == 3:
+        user_bug_killer = 0
+    data['user_bug_killer'] = user_bug_killer
+
+    share_item = data['share_item']
+    if share_item == 2:
+        share_item = 0.75
+    elif share_item == 3:
+        share_item = 0
+    data['share_item'] = share_item
+
+    mate_alcohol = data['mate_alcohol']
+    if mate_alcohol == 2:
+        mate_alcohol = 0.66
+    elif mate_alcohol == 3:
+        mate_alcohol = 0.33
+    elif mate_alcohol == 4:
+        mate_alcohol = 0
+    data['mate_alcohol'] = mate_alcohol
+
+    mate_clean = data['mate_clean']
+    if mate_clean == 2:
+        mate_clean = 0.5
+    elif mate_clean == 3:
+        mate_clean = 0
+    data['mate_clean'] = mate_clean
+
+    permission_to_enter = data['permission_to_enter']
+    if permission_to_enter == 2:
+        permission_to_enter = 0.5
+    elif permission_to_enter == 3:
+        permission_to_enter = 0
+    data['permission_to_enter'] = permission_to_enter
+        
+    return data 
 
 def matching_result(request):
     user_id = 10
 
     # 원본
-    user_data = pd.DataFrame(MatchingInfo.objects.filter(id=user_id).values()).iloc[0]
+    user_data = pd.DataFrame(MatchingInfo.objects.filter(uid=user_id).values()).iloc[0]
     df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
     
     # 변형
@@ -157,9 +251,9 @@ def matching_result(request):
     # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
     result_index_list = np.argsort(distance_result)[:20]
 
-    result = [df.iloc[i]['id'] for i in result_index_list]
+    result = [df.iloc[i]['uid'] for i in result_index_list]
     
-    content = {'id': user_id, 'result': result}
+    content = {'uid': user_id, 'result': result}
 
     # MatchingResult
     update_at = timezone.now()
@@ -170,17 +264,17 @@ def matching_result(request):
 def mate_matching_all():
     infos = MatchingInfo.objects.all()
     for info in infos:
-        mate_matching(info.id)
+        mate_matching(info.uid)
 
 def mate_matching(uid):
     # 원본
-    user_data = pd.DataFrame(MatchingInfo.objects.filter(id=uid).values()).iloc[0]
+    user_data = pd.DataFrame(MatchingInfo.objects.filter(uid=uid).values()).iloc[0]
     df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
     print(df)
     
     # 변형
-    dataset = df[['mbti', 'sex', 'age', 'air_night_airconditioner', 'noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
-    user = user_data[['mbti', 'sex', 'age', 'air_night_airconditioner', 'noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
+    dataset = df[['mbti', 'sex', 'age','noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
+    user = user_data[['mbti', 'sex', 'age','noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
 
     # 데이터 필터링
     if user_data['mate_pet'] == 1:
@@ -227,7 +321,7 @@ def mate_matching(uid):
     # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
     result_index_list = np.argsort(distance_result)[:20]
 
-    result = [df.iloc[i]['id'] for i in result_index_list]
+    result = [df.iloc[i]['uid'] for i in result_index_list]
 
     # DB에 결과 저장
     update_at = timezone.now()
