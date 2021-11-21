@@ -13,6 +13,8 @@ def main():
     except Exception as e:
         print("[데이터 전처리 중 에러 발생] " + e)
 
+    print(df)
+
     try:
         insert_data(df)
     except Exception as e:
@@ -156,6 +158,9 @@ def preprocess_data(df):
     df = df[['uid', 'sex', 'age', 'mbti', 'user_smoking', 'mate_smoking', 'user_pet', 'user_pet_category', 'mate_pet_category', 
             'air', 'user_bug_killer', 'mate_bug_killer', 'user_cooking', 'mate_cooking', 'eat_together', 'share_item', 'noise', 'mate_alcohol', 
             'mate_clean', 'permission_to_enter']]
+
+    # mbti 대문자로 변경
+    df['mbti'] = df['mbti'].apply(lambda x : x.upper())
     
     # 컬럼 별 데이터 0~1 사이 값으로 변환
     df['sex'] = df['sex'].apply(lambda x : 1 if str(x) == '여자' else 0)
@@ -216,11 +221,11 @@ def preprocess_data(df):
     return df
 
 def insert_data(df):
-    conn = pymysql.connect(host = '127.0.0.1', 
+    conn = pymysql.connect(host = 'project-mnm-matching-db.ctixol1fxh7r.ap-northeast-2.rds.amazonaws.com', 
                        port = 3306, 
                        user = 'root', 
-                       password = 'blackpink0808', 
-                       db = 'mnm_matching_server_db')
+                       password = 'milktea1121', 
+                       db = 'matching')
 
     cursor = conn.cursor()
 

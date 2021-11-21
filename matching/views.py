@@ -302,22 +302,22 @@ MBTI_DISTANCE = np.array([
 ])
 
 MBTI_MAP = dict(
-    infp=0,
-    enfp=1,
-    infj=2,
-    enfj=3,
-    intj=4,
-    entj=5,
-    intp=6,
-    entp=7,
-    isfp=8,
-    esfp=9,
-    istp=10,
-    estp=11,
-    isfj=12,
-    esfj=13,
-    istj=14,
-    estj=15,
+    INFP=0,
+    ENFP=1,
+    INFJ=2,
+    ENFJ=3,
+    INTJ=4,
+    ENTJ=5,
+    INTP=6,
+    ENTP=7,
+    ISFP=8,
+    ESFP=9,
+    ISTP=10,
+    ESTP=11,
+    ISFJ=12,
+    ESFJ=13,
+    ISTJ=14,
+    ESTJ=15,
     모른다=16
 )
 
