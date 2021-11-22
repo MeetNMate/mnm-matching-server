@@ -88,11 +88,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mnm_matching_server_db',
+        'NAME': 'matching',
         'USER': 'root', 
-        'PASSWORD': 'blackpink0808', 
-        'HOST': 'localhost', 
+        'PASSWORD': 'milktea1121', 
+        'HOST': 'project-mnm-matching-db.ctixol1fxh7r.ap-northeast-2.rds.amazonaws.com', 
         'PORT': '3306', 
+        'OPTIONS': {
+            'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"'
+        }
     }
 }
 
