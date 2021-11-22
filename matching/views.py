@@ -120,7 +120,7 @@ class MatchingResultView(APIView):
 
 def data_preprocess(data):
     """ 매칭 정보 전처리 """
-    age = data['age']
+    age = int(data['age'])
     if age >= 40:
         age = 1
     elif 30 <= age <= 39:
@@ -135,14 +135,16 @@ def data_preprocess(data):
         age = 0
     data['age'] = age
 
-    mate_smoking = data['mate_smoking']
+    mate_smoking = int(data['mate_smoking'])
     if mate_smoking == 2:
         mate_smoking = 0
     elif mate_smoking == 3:
         mate_smoking = 0.5
     data['mate_smoking'] = mate_smoking
 
-    mate_pet = data['mate_pet']
+    
+
+    mate_pet = int(data['mate_pet'])
     if mate_pet == 1:
         mate_pet = 0
     elif mate_pet == 2:
@@ -151,49 +153,49 @@ def data_preprocess(data):
         mate_pet = 0
     data['mate_pet'] = mate_pet
 
-    air_like_airconditioner = data['air_like_airconditioner']
+    air_like_airconditioner = int(data['air_like_airconditioner'])
     if air_like_airconditioner == 2:
         air_like_airconditioner = 0.5
     elif air_like_airconditioner == 3:
         air_like_airconditioner = 0
     data['air_like_airconditioner'] = air_like_airconditioner
 
-    air_like_heater = data['air_like_heater']
+    air_like_heater = int(data['air_like_heater'])
     if air_like_heater == 2:
         air_like_heater = 0.5
     elif air_like_heater == 3:
         air_like_heater = 0
     data['air_like_heater'] = air_like_heater
 
-    noise_talking = data['noise_talking']
+    noise_talking = int(data['noise_talking'])
     if noise_talking == 2:
         noise_talking = 0.5
     elif noise_talking == 3:
         noise_talking = 0
     data['noise_talking'] = noise_talking
 
-    noise_music = data['noise_music']
+    noise_music = int(data['noise_music'])
     if noise_music == 2:
         noise_music = 0.5
     elif noise_music == 3:
         noise_music = 0
     data['noise_music'] = noise_music
     
-    user_bug_killer = data['user_bug_killer']
+    user_bug_killer = int(data['user_bug_killer'])
     if user_bug_killer == 2:
         user_bug_killer = 0.5
     elif user_bug_killer == 3:
         user_bug_killer = 0
     data['user_bug_killer'] = user_bug_killer
 
-    share_item = data['share_item']
+    share_item = int(data['share_item'])
     if share_item == 2:
         share_item = 0.75
     elif share_item == 3:
         share_item = 0
     data['share_item'] = share_item
 
-    mate_alcohol = data['mate_alcohol']
+    mate_alcohol = int(data['mate_alcohol'])
     if mate_alcohol == 2:
         mate_alcohol = 0.66
     elif mate_alcohol == 3:
@@ -202,20 +204,20 @@ def data_preprocess(data):
         mate_alcohol = 0
     data['mate_alcohol'] = mate_alcohol
 
-    mate_clean = data['mate_clean']
+    mate_clean = int(data['mate_clean'])
     if mate_clean == 2:
         mate_clean = 0.5
     elif mate_clean == 3:
         mate_clean = 0
     data['mate_clean'] = mate_clean
 
-    permission_to_enter = data['permission_to_enter']
+    permission_to_enter = int(data['permission_to_enter'])
     if permission_to_enter == 2:
         permission_to_enter = 0.5
     elif permission_to_enter == 3:
         permission_to_enter = 0
     data['permission_to_enter'] = permission_to_enter
-        
+    print(data['permission_to_enter'])
     return data 
 
 def mate_matching_all():
