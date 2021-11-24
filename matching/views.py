@@ -113,8 +113,10 @@ class MatchingResultView(APIView):
         try:
             mate_list = mate_matching(uid) # 메이트 매칭
             update_at = timezone.now()
+            print(mate_list)
+            print(update_at)
             MatchingResult(uid_id=uid, mate_list=mate_list, update_at=update_at).save()
-            return Response(str(mate_list)[1:-2], status.HTTP_201_CREATED)
+            return Response(str(mate_list)[1:-1], status.HTTP_201_CREATED)
         except:
             return Response("메이트 매칭 중 에러 발생", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -230,7 +232,7 @@ def mate_matching(uid):
     """ 메이트 매칭 """
     # 원본
     user_data = pd.DataFrame(MatchingInfo.objects.filter(uid=uid).values()).iloc[0]
-    df = pd.DataFrame(list(MatchingInfo.objects.all().values()))
+    df = pd.DataFrame(list(MatchingInfo.objects.exclude(uid=uid).values()))
 
     # 변형
     dataset = df[['mbti', 'sex', 'age','noise_alarm', 'eat_together', 'share_item', 'mate_alcohol', 'mate_clean', 'permission_to_enter']]
@@ -280,6 +282,7 @@ def mate_matching(uid):
 
     # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
     result_index_list = np.argsort(distance_result)[:20]
+    print(result_index_list)
 
     return [df.loc[i,'uid_id'] for i in result_index_list]
 
