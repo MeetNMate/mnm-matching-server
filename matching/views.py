@@ -112,7 +112,7 @@ class MatchingResultView(APIView):
         uid = kwargs.get('uid')
         try:
             mate_list = mate_matching(uid) # 메이트 매칭
-            update_at = timezone.localtime()
+            update_at = timezone.now()
             MatchingResult(uid_id=uid, mate_list=mate_list, update_at=update_at).save()
             return Response(str(mate_list)[1:-1], status.HTTP_201_CREATED)
         except:
@@ -280,7 +280,6 @@ def mate_matching(uid):
 
     # 오름차순으로 정렬하여 인덱스들의 리스트를 리턴한다.
     result_index_list = np.argsort(distance_result)[:20]
-    print(result_index_list)
 
     return [df.loc[i,'uid_id'] for i in result_index_list]
 
