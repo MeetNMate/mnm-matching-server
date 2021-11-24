@@ -114,8 +114,7 @@ class MatchingResultView(APIView):
             mate_list = mate_matching(uid) # 메이트 매칭
             update_at = timezone.now()
             MatchingResult(uid_id=uid, mate_list=mate_list, update_at=update_at).save()
-
-            return Response(','.join(mate_list), status.HTTP_201_CREATED)
+            return Response(str(mate_list)[1:-2], status.HTTP_201_CREATED)
         except:
             return Response("메이트 매칭 중 에러 발생", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
