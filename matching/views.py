@@ -112,9 +112,7 @@ class MatchingResultView(APIView):
         uid = kwargs.get('uid')
         try:
             mate_list = mate_matching(uid) # 메이트 매칭
-            update_at = timezone.now()
-            print(mate_list)
-            print(update_at)
+            update_at = timezone.localtime()
             MatchingResult(uid_id=uid, mate_list=mate_list, update_at=update_at).save()
             return Response(str(mate_list)[1:-1], status.HTTP_201_CREATED)
         except:
